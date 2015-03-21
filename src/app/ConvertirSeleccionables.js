@@ -37,13 +37,16 @@ handler:function(evt) {
 var me = this;
 var capa1,capa2,layer1, layer2, nombre1, nombre2, fin;
 fin = 0;
-nombre1 = prompt("Por favor Introduce el nombre de la PRIMERA capa para convertirla en seleccionable","");
-if (nombre1 != null){
-nombre2 = prompt("Por favor Introduce el nombre de la SEGUNDA capa para convertirla en seleccionable","");
-if(nombre2 != null){
+//nombre1 = prompt("Por favor Introduce el nombre de la PRIMERA capa para convertirla en seleccionable","");
+if (true){
+//nombre2 = prompt("Por favor Introduce el nombre de la SEGUNDA capa para convertirla en seleccionable","");
+if(true){
+	this.layer = target.getLayerRecordFromMap({
+                name: 'Idesf:calles',
+                source: 'local'
+            }).getLayer();
 
-capa1= map.getLayersByName(nombre1);
-capa2= map.getLayersByName(nombre2);
+alert(layer.RESOLUTION_PROPERTIES);
 
 
 }

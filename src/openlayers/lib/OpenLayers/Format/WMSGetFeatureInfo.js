@@ -68,6 +68,7 @@ OpenLayers.Format.WMSGetFeatureInfo = OpenLayers.Class(OpenLayers.Format.XML, {
      * {Array(<OpenLayers.Feature.Vector>)} An array of features.
      */
     read: function(data) {
+		
         var result;
         if(typeof data == "string") {
             data = OpenLayers.Format.XML.prototype.read.apply(this, [data]);
@@ -101,6 +102,7 @@ OpenLayers.Format.WMSGetFeatureInfo = OpenLayers.Class(OpenLayers.Format.XML, {
      * {Array}
      */
     read_msGMLOutput: function(data) {
+		
         var response = [];
         var layerNodes = this.getSiblingNodesByTagCriteria(data,
             this.layerIdentifier);
@@ -142,6 +144,7 @@ OpenLayers.Format.WMSGetFeatureInfo = OpenLayers.Class(OpenLayers.Format.XML, {
      * {Array}
      */
     read_FeatureInfoResponse: function(data) {
+		
         var response = [];
         var featureNodes = this.getElementsByTagNameNS(data, '*',
             'FIELDS');
@@ -237,6 +240,7 @@ OpenLayers.Format.WMSGetFeatureInfo = OpenLayers.Class(OpenLayers.Format.XML, {
      * and contain only a single text node. 
      */    
     parseAttributes: function(node){
+		
         var attributes = {};
         if (node.nodeType == 1) {
             var children = node.childNodes;
@@ -278,6 +282,7 @@ OpenLayers.Format.WMSGetFeatureInfo = OpenLayers.Class(OpenLayers.Format.XML, {
     parseGeometry: function(node) {
         // we need to use the old Format.GML parser since we do not know the 
         // geometry name
+		alert("acaaa");
         if (!this.gmlFormat) {
             this.gmlFormat = new OpenLayers.Format.GML();
         }

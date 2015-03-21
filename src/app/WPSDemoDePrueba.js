@@ -124,9 +124,9 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 					if (nombre1 != null){
 					nombre2 = prompt("Por favor ntroduce el nombre de la SEGUNDA capa para convertirla en seleccionable","");
 					if(nombre2 != null){
-					capa1= map.getLayersByName (nombre1);
+					capa1= map.getLayersByName(nombre1);
 					capa2 = map.getLayersByName(nombre2);
-					alert(capa1.geometryType);
+					alert(capa1);
 					}
 					else { fin =2}
 					}

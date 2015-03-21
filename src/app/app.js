@@ -24,6 +24,7 @@
  * @require plugins/GoogleSource.js
  * @require WPSDemoDePrueba.js
  * @require ConvertirSeleccionables.js
+ * @require plugins/WMSGetFeatureInfo.js
  */
 
 var app = new gxp.Viewer({
@@ -82,7 +83,11 @@ var app = new gxp.Viewer({
         ptype: "gxp_navigationhistory",
         actionTarget: "map.tbar"
     },{ ptype: "app_convertir"},
-	{ ptype: "app_wpsdemo" }
+	{
+    ptype: "gxp_wmsgetfeatureinfo"
+}
+	//,
+	//{ ptype: "app_wpsdemo" }
 	
 	],
     
@@ -113,11 +118,7 @@ var app = new gxp.Viewer({
             source: "osm",
             name: "mapnik",
             group: "background"
-        }, {
-            source: "local",
-            name: "usa:states",
-            selected: true
-        },
+        }, 
 			{
 			source: "google",
 			name: "SATELLITE",
@@ -127,6 +128,12 @@ var app = new gxp.Viewer({
             source: "ol",
             name: "sketch",
             type: "OpenLayers.Layer.Vector"
+        },
+		{
+            // A vector layer to display our geometries and processing results
+            source: "local",
+            name: "Idesf:calles",
+			selected: true
         }],
         items: [{
             xtype: "gx_zoomslider",

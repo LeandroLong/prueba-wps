@@ -130,6 +130,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
         var info = {controls: []};
         var updateInfo = function() {
             var queryableLayers = this.target.mapPanel.layers.queryBy(function(x){
+				
                 return x.get("queryable");
             });
 
@@ -137,6 +138,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
             var control;
             for (var i = 0, len = info.controls.length; i < len; i++){
                 control = info.controls[i];
+			
                 control.deactivate();  // TODO: remove when http://trac.openlayers.org/ticket/2130 is closed
                 control.destroy();
             }
@@ -148,6 +150,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
                 if (this.layerParams) {
                     for (var i=this.layerParams.length-1; i>=0; --i) {
                         param = this.layerParams[i].toUpperCase();
+						
                         vendorParams[param] = layer.params[param];
                     }
                 }
@@ -165,7 +168,9 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
                     vendorParams: vendorParams,
                     eventListeners: {
                         getfeatureinfo: function(evt) {
+							
                             var title = x.get("title") || x.get("name");
+							
                             if (infoFormat == "text/html") {
                                 var match = evt.text.match(/<body[^>]*>([\s\S]*)<\/body>/);
                                 if (match && !match[1].match(/^\s*$/)) {
@@ -178,6 +183,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
                             } else if (infoFormat === 'application/json' && evt.text) {
                                 evt.features = this.geoJSONFormat.read(evt.text);
                                 if (evt.features && evt.features.length > 0) {
+									
                                     this.displayPopup(evt, title, null,  x.get("getFeatureInfo"));
                                 }
                             }
@@ -209,7 +215,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
      * :arg text: ``String`` Body text.
      */
     displayPopup: function(evt, title, text, featureinfo) {
-        var popup;
+		        var popup;
         var popupKey = evt.xy.x + "." + evt.xy.y;
         featureinfo = featureinfo || {};
         if (!(popupKey in this.popupCache)) {
@@ -249,6 +255,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
             var feature;
             for (var i=0,ii=features.length; i<ii; ++i) {
                 feature = features[i];
+			
                 config.push(Ext.apply({
                     xtype: "gxp_editorgrid",
                     readOnly: true,
@@ -264,6 +271,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
                 }, this.itemConfig));
             }
         } else if (text) {
+			alert(text);
             config.push(Ext.apply({
                 title: title,
                 html: text
