@@ -24,7 +24,11 @@
  * @require plugins/GoogleSource.js
  * @require WPSDemoDePrueba.js
  * @require ConvertirSeleccionables.js
+ * @require plugins/FeatureEditor.js
  * @require plugins/WMSGetFeatureInfo.js
+ * @require plugins/GoogleGeocoder.js
+ * @require plugins/FeatureGrid.js
+ * @require plugins/FeatureManager.js
  */
 
 var app = new gxp.Viewer({
@@ -73,21 +77,14 @@ var app = new gxp.Viewer({
     }, {
         ptype: "gxp_removelayer",
         actionTarget: ["tree.tbar", "tree.contextMenu"]
-    }, {
-        ptype: "gxp_zoomtoextent",
-        actionTarget: "map.tbar"
-    }, {
-        ptype: "gxp_zoom",
-        actionTarget: "map.tbar"
-    }, {
-        ptype: "gxp_navigationhistory",
-        actionTarget: "map.tbar"
-    },{ ptype: "app_convertir"},
-	{
-    ptype: "gxp_wmsgetfeatureinfo"
-}
-	//,
-	//{ ptype: "app_wpsdemo" }
+    },// {        ptype: "gxp_zoomtoextent",      actionTarget: "map.tbar"    }, 
+	
+//	{  ptype: "gxp_zoom",  actionTarget: "map.tbar" },
+//	{  ptype: "gxp_navigationhistory", actionTarget: "map.tbar"},
+	//{ ptype: "app_convertir"},
+	{ ptype: "app_wpsdemo"}
+	
+	//,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Search for a location ..." }}
 	
 	],
     
@@ -114,23 +111,19 @@ var app = new gxp.Viewer({
         projection: "EPSG:900913",
         center: [-6755000.758211, -3715572.3184791],
         zoom: 12,
-        layers: [{
+        layers: [
+			{
             source: "osm",
             name: "mapnik",
             group: "background"
-        }, 
-			{
-			source: "google",
-			name: "SATELLITE",
-			group: "background"
-		} , {
-            // A vector layer to display our geometries and processing results
+        },  {
+            // Capa Vector para mostrar nuestras geometrias y los resultados del procesamiento
             source: "ol",
             name: "sketch",
             type: "OpenLayers.Layer.Vector"
         },
 		{
-            // A vector layer to display our geometries and processing results
+            // Capa calles
             source: "local",
             name: "Idesf:calles",
 			selected: true

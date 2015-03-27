@@ -402,6 +402,7 @@
                 "OpenLayers/Spherical.js",
                 "OpenLayers/TileManager.js",
                 "OpenLayers/WPSClient.js",
+				"OpenLayers/Parse.js",
                 "OpenLayers/WPSProcess.js"
             ]; // etc.
         }

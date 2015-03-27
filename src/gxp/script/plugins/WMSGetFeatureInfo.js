@@ -57,7 +57,7 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
      *  ``String``
      *  Title for info popup (i18n).
      */
-    popupTitle: "Feature Info",
+    popupTitle: "Información de Caracteristica",
     
     /** api: config[text]
      *  ``String`` Text for the GetFeatureInfo button (i18n).
@@ -271,7 +271,6 @@ gxp.plugins.WMSGetFeatureInfo = Ext.extend(gxp.plugins.Tool, {
                 }, this.itemConfig));
             }
         } else if (text) {
-			alert(text);
             config.push(Ext.apply({
                 title: title,
                 html: text

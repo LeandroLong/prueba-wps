@@ -7,6 +7,7 @@
  * @require OpenLayers/Handler/Path.js
  * @require OpenLayers/WPSClient.js
  * @require OpenLayers/Geometry.js
+ * @require OpenLayers/WPS.js
  */
 
  
@@ -21,9 +22,11 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
         // Crea una instancia del servidos local WPS
         this.wpsClient = new OpenLayers.WPSClient({
             servers: {
-                local: '/geoserver/wps'
+                local: 'geoserver/wps'
             }
         });
+		
+		 this.wps = new OpenLayers.WPS('geoserver/wps');
     
         // Añade botones de acción cuando el VISOR (wiever) está listo
         target.on('ready', function() {
@@ -45,8 +48,19 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Dibujar',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Polygon
+                        this.layer, OpenLayers.Handler.Path
                     )
+                }, actionDefaults)),
+					//Acción para calculo interseccion
+				 new GeoExt.Action(Ext.apply({
+                    text: 'Insersect',
+                    control: new OpenLayers.Control.DrawFeature(
+                        this.layer, OpenLayers.Handler.Path, {
+                        eventListeners: {
+                            featureadded: this.intersects,
+                            scope: this
+                        }
+                    })
                 }, actionDefaults)),
                 // Acción para arrastrar geometrías existentes
                 new GeoExt.Action(Ext.apply({
@@ -68,11 +82,11 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 				
 				//Acción para calculo de interseccion
 				 new GeoExt.Action(Ext.apply({
-                    text: 'Interseccion',
+                    text: 'Borrar',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Polygon, {
+                        this.layer, OpenLayers.Handler.Point, {
                         eventListeners: {
-                            featureadded: this.interseccion,
+                            featureadded: this.borrar,
                             scope: this
                         }
                     })
@@ -80,27 +94,17 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 				
 					//Acción para calculo de union
 				 new GeoExt.Action(Ext.apply({
-                    text: 'Union',
+                    text: 'Area',
                     control: new OpenLayers.Control.DrawFeature(
                         this.layer, OpenLayers.Handler.Polygon, {
                         eventListeners: {
-                            featureadded: this.union,
+                            featureadded: this.area,
                             scope: this
                         }
                     })
                 }, actionDefaults)),
 				
-					//Acción para calculo de union
-				 new GeoExt.Action(Ext.apply({
-                    text: 'Centroide',
-                    control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Polygon, {
-                        eventListeners: {
-                            featureadded: this.centroide,
-                            scope: this
-                        }
-                    })
-                }, actionDefaults)),
+				
 				
 				//Acción para la intersection+buffer dibujando una línea
                     new GeoExt.Action(Ext.apply({
@@ -112,172 +116,75 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                             scope: this
                         }
                     })
-                }, actionDefaults)),
-
-				new GeoExt.Action({
-					text: 'Convertir Capas',
-					handler:function(evt) {
-					var me = this;
-					var capa1,capa2,layer1, layer2, nombre1, nombre2, fin;
-					fin = 0;
-					nombre1 = prompt("Por favor ntroduce el nombre de la PRIMERA capa para convertirla en seleccionable","");
-					if (nombre1 != null){
-					nombre2 = prompt("Por favor ntroduce el nombre de la SEGUNDA capa para convertirla en seleccionable","");
-					if(nombre2 != null){
-					capa1= map.getLayersByName(nombre1);
-					capa2 = map.getLayersByName(nombre2);
-					alert(capa1);
-					}
-					else { fin =2}
-					}
-					else{fin = 1 }
-					if (fin == 0){
-					if (capa1.length != 0 && capa2.length != 0){
-					document.capauno="Selection "+nombre1;
-					document.capados="Selection "+nombre2;
-					layer1= new OpenLayers.Layer.WMS(
-					nombre1,
-					"http://localhost:9080/geoserver/wms",
-					{layers: 'europe:'+nombre1, transparent: true,
-					isBaseLayer:false }
-					);
-					select = new OpenLayers.Layer.Vector("Selection "+nombre1,
-					{styleMap:
-					new
-					OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
-					});
-					map.addLayers([layer1, select]);
-					control = new OpenLayers.Control.GetFeature({
-					protocol: OpenLayers.Protocol.WFS.fromWMSLayer(layer1),
-					box: true,
-					hover: false,
-					//toggle:false,
-					//multiple: false,
-					clickout: true,
-					multipleKey: "shiftKey",
-					toggleKey: "ctrlKey"
-					});
-					control.events.register("featureselected", this, function(e) {
-					if(!map.getLayersByName('Selection '+nombre2)[0].features.length) {
-					//alert(map.getLayersByName("Selection Nucleos Urbanos")[0].features.length);
-					select.addFeatures([e.feature]);
-					//alert(map.getLayersByName("Selection")[0].features[0].id);
-					}
-					});
-					control.events.register("featureunselected", this, function(e) {
-					//alert("pais") ;
-					select.removeFeatures([e.feature]);
-					});
-					map.addControl(control);
-					control.activate();
-					///////////////////////////////////////////////////////////////////////////////////////////
-					layer2= new OpenLayers.Layer.WMS(
-					nombre2,
-					"http://localhost:9080/geoserver/wms",
-					{layers: 'europe:'+nombre2, transparent: true,
-					isBaseLayer:false }
-					);
-					select2 = new OpenLayers.Layer.Vector("Selection "+nombre2,
-					{styleMap:
-					new
-					OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
-					});
-					map.addLayers([layer2, select2]);
-					control2 = new OpenLayers.Control.GetFeature({
-					protocol: OpenLayers.Protocol.WFS.fromWMSLayer(layer2),
-					box: true,
-					hover: false,
-					//toggle:false,
-					//multiple: false,
-					clickout: true,
-					multipleKey: "shiftKey",
-					toggleKey: "ctrlKey"
-					});
-					control2.events.register("featureselected", this, function(e) {
-					//alert(map.getLayersByName("Selection Nucleos Urbanos")[0].features.length);
-					select2.addFeatures([e.feature]);
-					//alert(map.getLayersByName("Selection")[0].features[0].id);
-					});
-					control2.events.register("featureunselected", this, function(e) {
-					//alert("pais") ;
-					select2.removeFeatures([e.feature]);
-					});
-					map.addControl(control2);
-					control2.activate();
-					map.removeLayer(capa1[0]);
-					map.removeLayer(capa2[0]);
-					}
-					else {alert('ERROR: nombre de la capa incorrecto');}
-					}
-					}
-					},actionDefaults)
+                }, actionDefaults))
 				
             ]); // Fin de agregacion de ACCIONES
         }, this);
     },
 
 	 /** Controlador de funcion para la interseccion de geometrias */
-    interseccion: function(evt) {
-        var line = evt.feature;
+    borrar: function(evt) {
+       
+	     var line = evt.feature;
+		//alert(line.geometry);
         var poly;
-		for (var i=this.layer.features.length-1; i>=0; --i) {
+			for (var i=this.layer.features.length-1; i>=0; --i) {
             poly = this.layer.features[i];
-            if (poly !== line && poly.geometry.intersects(line.geometry)) {
+            if (poly !== line && poly.geometry.intersects(line.geometry)){
+			this.layer.removeFeatures([poly]);
+			this.layer.removeFeatures([line]);
+			}	}
+    },
+	
+	 /** Controlador de funcion para la division de geometrias */
+    intersects: function(evt) {
+        var line = evt.feature;
+		//alert(line.geometry);
+        var poly;
+       
+            poly = this.layer.features[0];
+			//alert(poly.geometry);
+            if (poly !== line) {
                 this.wpsClient.execute({
                     server: 'local',
-                    process: 'JTS:intersection',
-                    inputs: {a: line, b: poly },
-                    success: this.addResult,
+                    process: 'JTS:intersects',
+                    inputs: { a: poly, b: line },
+                    success: this.addResult2,
                     scope: this
                 });
+          
             }
-        }
-        this.layer.removeFeatures([line]);
-		this.layer.removeFeatures([poly]);
+			this.layer.removeFeatures([poly]);
+			this.layer.removeFeatures([line]);
+  
+  
     },
 	
-	 /** Controlador de funcion para la interseccion de geometrias */
-    centroide: function(evt) {
-		var poligono = evt.feature;
-       OpenLayers.Request.POST({
-        url: "http://localhost:8080/geoserver/wps",
-        params: {
-            "SERVICE": "WPS",
-            "REQUEST": "Execute",
-            "VERSION": '1.0.0',
-            "IDENTIFIER": 'JTS:union',
-            "RawDataOutput": 'result',
-            "datainputs": 'poligono'
-        },
-        success: function(outputs) {
-        for (var i=0, ii=outputs.result.length; i<ii; ++i) {
-            alert(outputs.result[i].geometry.toString());
-        }
-    },
-        failure: function(res){     
-                     alert('failure');
-        }
-
-    });},
-	
-		 /** Controlador de funcion para la union de geometrias */
-    union: function(evt) {
-        
-    
-		var line = evt.feature;
+	 /** Controlador de funcion para la division de geometrias */
+    area: function(evt) {
+        var line = evt.feature;
 		
-        for (var i=this.layer.features.length-1; i>=0; --i) {
-            poly = this.layer.features[i];
+       
+       
+        
 			
            
-		 //   this.addResult(this.wpsClient.getProcess('local', 'JTS:intersection').configure({inputs: { a: line, b: poly }}).output());
-            
-        }
-     //   this.layer.removeFeatures([line]);
-	//	this.layer.removeFeatures([poly]);
+                this.wpsClient.execute({
+                    server: 'local',
+                    process: 'JTS:area',
+                    inputs: { geom: line},
+                    success: this.addResult2,
+                    scope: this
+                });
+          
+           
+		//	this.layer.removeFeatures([poly]);
+		//	this.layer.removeFeatures([line]);
+  
+  
     },
 	
-	
+		
     /** Controlador de funcion para la division de geometrias */
     split: function(evt) {
         var line = evt.feature;
@@ -329,22 +236,24 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                     scope: this
                 });
             }
+			
         }
         this.layer.removeFeatures([line]);
     },
 
    	/** Función auxiliar para la adición de los resultados del proceso de la capa de vector */
     addResult: function(outputs) {
+		alert(outputs.result);
         this.layer.addFeatures(outputs.result);
-    },
-	
-	/** Funcion axiliar que ni idea lo que hace jeje*/
-	  raiseLayer: function() {
-    var map = this.boxLayer && this.boxLayer.map;
-    if (map) {
-      map.setLayerIndex(this.boxLayer, map.layers.length);
     }
-  }
+	
+	,
+
+   	/** Función auxiliar para la adición de los resultados del proceso de la capa de vector */
+    addResult2: function(outputs) {
+        alert(outputs.result);
+    }
+
 });
 
 Ext.preg(WPSDemo.prototype.ptype, WPSDemo);

@@ -222,14 +222,17 @@ OpenLayers.WPSProcess = OpenLayers.Class({
                         data: new OpenLayers.Format.WPSExecute().write(me.description),
                         success: function(response) {
                             var output = me.description.processOutputs[outputIndex];
-                            var mimeType = me.findMimeType(
-                                output.complexOutput.supported.formats
-                            );
+                            var mimeType = "application/wkt";
                             //TODO For now we assume a spatial output
+							
                             var features = me.formats[mimeType].read(response.responseText);
+							
                             if (features instanceof OpenLayers.Feature.Vector) {
                                 features = [features];
                             }
+							if(features === undefined){
+								features = response.responseText;
+							}
                             if (options.success) {
                                 var outputs = {};
                                 outputs[options.output || 'result'] = features;
@@ -350,14 +353,14 @@ OpenLayers.WPSProcess = OpenLayers.Class({
     setResponseForm: function(options) {
         options = options || {};
         var output = this.description.processOutputs[options.outputIndex || 0];
-		//alert(output.complexOutput);
-        this.description.responseForm = {
+		this.description.responseForm = {
             rawDataOutput: {
                 identifier: output.identifier,
-                mimeType: this.findMimeType(output.complexOutput.supported.formats, options.supportedFormats)
+				// ACA ES DONDE FALLA
+                mimeType: "application/wkt"
             }
         };
-    },
+		},
     
     /**
      * Method: getOutputIndex
