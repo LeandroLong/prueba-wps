@@ -217,6 +217,11 @@
         }
     };
     function fXMLHttpRequest_send(oRequest) {
+		
+		///////////////////////////////////////////
+		//// ACA SE EJECUTA LA CONSULTA EN EL SERVIDOR ////////////
+		///////////////////////////////////////////
+		
         oRequest._object.send(oRequest._data);
 
         // BUGFIX: Gecko - missing readystatechange calls in synchronous requests

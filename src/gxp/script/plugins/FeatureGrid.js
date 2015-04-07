@@ -127,6 +127,7 @@ gxp.plugins.FeatureGrid = Ext.extend(gxp.plugins.ClickableFeatures, {
     /** private: method[displayTotalResults]
      */
     displayTotalResults: function() {
+		
         var featureManager = this.target.tools[this.featureManager];
         if (this.showTotalResults === true) {
             this.displayItem.setText(
@@ -143,6 +144,7 @@ gxp.plugins.FeatureGrid = Ext.extend(gxp.plugins.ClickableFeatures, {
     /** api: method[addOutput]
      */
     addOutput: function(config) {
+		
         var featureManager = this.target.tools[this.featureManager];
         var map = this.target.mapPanel.map, smCfg;
         // a minimal SelectFeature control - used just to provide select and
@@ -249,7 +251,7 @@ gxp.plugins.FeatureGrid = Ext.extend(gxp.plugins.ClickableFeatures, {
             contextMenu: new Ext.menu.Menu({items: []})
         }, config || {});
         var featureGrid = gxp.plugins.FeatureGrid.superclass.addOutput.call(this, config);
-        featureGrid.on({
+		featureGrid.on({
             "added": function(cmp, ownerCt) {
                 function onClear() {
                     this.displayTotalResults();
@@ -310,6 +312,7 @@ gxp.plugins.FeatureGrid = Ext.extend(gxp.plugins.ClickableFeatures, {
         });
                 
         function onLayerChange() {
+			
             var schema = featureManager.schema,
                 ignoreFields = ["feature", "state", "fid"];
             //TODO use schema instead of store to configure the fields
@@ -332,6 +335,7 @@ gxp.plugins.FeatureGrid = Ext.extend(gxp.plugins.ClickableFeatures, {
         }
 
         if (featureManager.featureStore) {
+			
             onLayerChange.call(this);
         } 
         featureManager.on("layerchange", onLayerChange, this);

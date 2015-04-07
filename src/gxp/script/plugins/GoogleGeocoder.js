@@ -45,7 +45,7 @@ gxp.plugins.GoogleGeocoder = Ext.extend(gxp.plugins.Tool, {
     updateField: "viewport",
     
     init: function(target) {
-
+		
         var combo = new gxp.form.GoogleGeocoderComboBox(Ext.apply({
             listeners: {
                 select: this.onComboSelect,
@@ -65,6 +65,7 @@ gxp.plugins.GoogleGeocoder = Ext.extend(gxp.plugins.Tool, {
             });
         }
         this.combo = combo;
+		
         
         return gxp.plugins.GoogleGeocoder.superclass.init.apply(this, arguments);
 
@@ -73,6 +74,8 @@ gxp.plugins.GoogleGeocoder = Ext.extend(gxp.plugins.Tool, {
     /** api: method[addOutput]
      */
     addOutput: function(config) {
+		// Llama a la funcion addOutput de la Superclase TOOL
+		
         return gxp.plugins.GoogleGeocoder.superclass.addOutput.call(this, this.combo);
     },
     
@@ -80,6 +83,7 @@ gxp.plugins.GoogleGeocoder = Ext.extend(gxp.plugins.Tool, {
      *  Listener for combo's select event.
      */
     onComboSelect: function(combo, record) {
+		
         if (this.updateField) {
             var map = this.target.mapPanel.map;
             var location = record.get(this.updateField).clone().transform(

@@ -239,7 +239,7 @@ OpenLayers.WPSProcess = OpenLayers.Class({
                                 options.success.call(options.scope, outputs);
                             }
                         },
-                        scope: me
+					    scope: me
                     });
                 })();
             },

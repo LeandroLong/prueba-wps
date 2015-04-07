@@ -24,11 +24,13 @@
  * @require plugins/GoogleSource.js
  * @require WPSDemoDePrueba.js
  * @require ConvertirSeleccionables.js
- * @require plugins/FeatureEditor.js
  * @require plugins/WMSGetFeatureInfo.js
  * @require plugins/GoogleGeocoder.js
  * @require plugins/FeatureGrid.js
  * @require plugins/FeatureManager.js
+ * @require BuscaIntersecciones.js
+ * @require plugins/SnappingAgent.js
+ * @require plugins/FeatureEditor.js
  */
 
 var app = new gxp.Viewer({
@@ -58,7 +60,14 @@ var app = new gxp.Viewer({
             layout: "fit",
             region: "west",
             width: 200
-        }],
+        }/*,{
+    id: "south",
+    xtype: "container",
+    layout: "fit",
+    region: "south",
+    border: false,
+    height: 200
+}*/],
         bbar: {id: "mybbar"}
     },
     
@@ -81,10 +90,39 @@ var app = new gxp.Viewer({
 	
 //	{  ptype: "gxp_zoom",  actionTarget: "map.tbar" },
 //	{  ptype: "gxp_navigationhistory", actionTarget: "map.tbar"},
+	{
+    ptype: "gxp_wmsgetfeatureinfo"
+},
+
 	//{ ptype: "app_convertir"},
 	{ ptype: "app_wpsdemo"}
 	
-	//,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Search for a location ..." }}
+	//,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
+	,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}
+/*	,
+	{
+    ptype: "gxp_featuremanager",
+    id: "states_manager",
+    paging: false,
+    layer: {
+        source: "local",
+        name: "Idesf:calles"
+    }
+},
+{
+    ptype: "gxp_featureeditor",
+    featureManager: "states_manager",
+    autoLoadFeature: true
+},
+{
+    ptype: "gxp_featuregrid",
+    featureManager: "states_manager",
+    outputConfig: {
+        loadMask: true
+    },
+    outputTarget: "south"
+}*/
+
 	
 	],
     

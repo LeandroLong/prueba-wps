@@ -133,12 +133,14 @@ gxp.form.GoogleGeocoderComboBox = Ext.extend(Ext.form.ComboBox, {
             return bounds;
         }).createDelegate(this);
         
+		// Lee del combobox el texto provisorio y devuelve posibles respuestas
         proxy.doRequest = function(action, rs, params, reader, callback, scope, options) {
             // Assumes all actions read.
+		
             geocoder.geocode(
                 {address: params.query, bounds: getBounds()},
                 function(results, status) {
-                    var readerResult;
+					var readerResult;
                     if (status === google.maps.GeocoderStatus.OK || 
                         status === google.maps.GeocoderStatus.ZERO_RESULTS) {
                         try {
@@ -166,7 +168,7 @@ gxp.form.GoogleGeocoderComboBox = Ext.extend(Ext.form.ComboBox, {
     },
         
     /** private: method[transformResults]
-     *  Transform an array of results so values are OpenLayers objects.
+     *  Transformar una serie de resultados de lo que los valores son objetos OpenLayers.
      */
     transformResults: function(gResults) {
         var num = gResults.length;
