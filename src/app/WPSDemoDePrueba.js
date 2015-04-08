@@ -9,6 +9,7 @@
  * @require OpenLayers/Geometry.js
  * @require OpenLayers/Format/WFS.js
  * @requires OpenLayers/Format/WPSExecute.js
+ * @requires OpenLayers/Format/WKT.js
  */
 
  
@@ -102,7 +103,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 				 new GeoExt.Action(Ext.apply({
                     text: 'Area',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Polygon, {
+                        this.layer, OpenLayers.Handler.Path, {
                         eventListeners: {
                             featureadded: this.area,
                             scope: this
@@ -172,75 +173,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                             alert("failed");
                     }
             });
-		/*
-		var control = new OpenLayers.Control.GetFeature({
-                    protocol : new OpenLayers.Protocol.WFS({
-					url : "http://localhost:9080/geoserver/wfs",
-					featureType : "Idesf:calles",
-					featureNS : "http://medford.opengeo.org/medford",
-					version: "1.1.0"
-						}),
-                   single: false,
-                clickTolerance: 10
-              });
-	/*
-
-	
-	var varparks = new OpenLayers.Layer.Vector("WFS", {
-    strategies : [new OpenLayers.Strategy.BBOX()],
-    protocol : new OpenLayers.Protocol.WFS({
-        url : "http://localhost:9080/geoserver/wfs",
-        featureType : "Idesf:calles",
-        featureNS : "http://medford.opengeo.org/medford",
-		version: "1.1.0"
-			})
-		});
-				
-		
-	/*	
-	var adresspt_wfs = new OpenLayers.Layer.Vector("Adress points WFS", {
-     protocol: new OpenLayers.Protocol.WFS({
-      url: "geoserver/wfs",
-      //featurePrefix:"luma_project",
-      featureType: "Idesf:calles",
-      srsName: "EPSG:4326",
-      geometryName: "the_geom",
-      version: "1.1.0"
-    })
-  });
-  
-  
-      // alert("entra bien");
-	  /* var capa1= this.map.getLayersByName('calles');
-	   
-	   var layer1= new OpenLayers.Layer.WMS(
-			'calles',
-			"http://localhost:9080/geoserver/wms",
-			{layers: 'Idesf:calles', transparent: true,
-			isBaseLayer:false }
-			);
-			
-			var select = new OpenLayers.Layer.Vector("Selection calles",
-				{styleMap:
-				new
-				OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
-				});
-				
-			this.map.addLayers([layer1]);
-			
-			var auxuliar = new OpenLayers.Protocol.WFS.fromWMSLayer(layer1);
-		
-		*/
-	   /*  var line = evt.feature;
-		//alert(line.geometry);
-        var poly;
-			for (var i=this.layer.features.length-1; i>=0; --i) {
-            poly = this.layer.features[i];
-            if (poly !== line && poly.geometry.intersects(line.geometry)){
-			this.layer.removeFeatures([poly]);
-			this.layer.removeFeatures([line]);
-			}	}*/
-    },
+	    },
 
 	 /** Controlador de funcion para la interseccion de geometrias */
     borrar: function(evt) {
@@ -266,23 +199,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 			//alert(poly.geometry);
             if (poly !== line) {
               
-
-			
-		/*	  var respuesta = OpenLayers.Request.POST({
-                    url: "geoserver/wps",
-                    params: {
-                            service: "WPS",
-                            version: "1.0.0",
-							request: "Execute",
-                            rawdataoutput: 'result',
-                            IDENTIFIER: 'JTS:intersect',
-							dataInputs: { a: poly, b: line }
-                    },
-					async: false
-            });*/
-			  
-		
-			 
+		 
 			 this.wpsClient.execute({
                     server: 'local',
                     process: 'JTS:intersects',
@@ -300,9 +217,13 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	
 	 /** Controlador de funcion para la division de geometrias */
     area: function(evt) {
-       var line = evt.feature;
-	   var poly = this.layer.features[0];
+     //  var line = evt.feature;
+	 //  var poly = this.layer.features[0];
 	   var wpsFormat= new OpenLayers.Format.WPSExecute(); 
+
+	   
+	   var calle1 = new OpenLayers.Format.WKT().extractGeometry(evt.feature.geometry);
+	   var calle2 = new OpenLayers.Format.WKT().extractGeometry(this.layer.features[0].geometry);
 	   
 	    var doc= wpsFormat.write({ 
         identifier: "JTS:intersects", 
@@ -311,44 +232,34 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             data:{ 
                 complexData:{
 					mimeType:"application/wkt", 
-					value: "LINESTRING(-6766733.8420511 -3711368.281924,-6769141.6084418 -3715763.4110498)"
-							}
-				},
+					value: calle1
+							}},
 		   complexData:{
 			   default: {
 				   format: "text/xml; subtype=gml/3.1.1"
-			   }
-			   
-		   }		
-				
-				},
+			   }}},
 			{ 
             identifier:'b', 
             data:{ 
                 complexData:{
 					mimeType:"application/wkt", 
-					value: "LINESTRING(-6770058.8527811 -3711406.5004381,-6773078.1153979 -3708540.1118778)"
-				}
-		},
+					value: calle2
+				}},
 		   complexData:{
 			   default: {
 				   format: "text/xml; subtype=gml/3.1.1"
-			   }
-			   
-		   }	}	
-              ], 
+			   }}}], 
 
             responseForm:{ 
                     rawDataOutput:{ 
                         mimeType:"application/wkt", 
                         identifier:"result" 
-                } 
-            } 
+                }} 
 
             }); 
        
    
-            if (poly !== line) {
+          
               
 		
 			  	  var respuesta = OpenLayers.Request.POST({
@@ -359,8 +270,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             });
 	     
                 alert(respuesta.responseText);
-			}
-			
+						
     },
 	
 		
