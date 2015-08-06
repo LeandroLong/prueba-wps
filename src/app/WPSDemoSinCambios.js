@@ -53,10 +53,8 @@ var numNucleos = map.getLayersByName(capa2)[0].features.length;
 var numPais = map.getLayersByName(capa1)[0].features.length ;
 if ((numNucleos > 0) && (numPais > 0)){
 var resultado = new OpenLayers.Layer.Vector("Interseccion");
-var features1 =
-map.getLayersByName(capa2)[0].features;//OpenLayer.Feature.Vector
-var features2 =
-map.getLayersByName(capa1)[0].features;//OpenLayer.Feature.Vector
+var features1 = map.getLayersByName(capa2)[0].features;//OpenLayer.Feature.Vector
+var features2 = map.getLayersByName(capa1)[0].features;//OpenLayer.Feature.Vector
 var intersection = wpsClient.getProcess('local',
 'JTS:intersection');
 var intersects = wpsClient.getProcess('local', 'JTS:intersects');

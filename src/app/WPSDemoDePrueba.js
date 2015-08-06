@@ -10,6 +10,7 @@
  * @require OpenLayers/Format/WFS.js
  * @requires OpenLayers/Format/WPSExecute.js
  * @requires OpenLayers/Format/WKT.js
+ * @require OpenLayers/Control/GetFeature.js
  */
 
  
@@ -55,7 +56,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Dibujar',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Path
+                        this.layer, OpenLayers.Handler.Polygon
                     )
                 }, actionDefaults)),
 					//Acción para calculo interseccion
@@ -111,7 +112,17 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                     })
                 }, actionDefaults)),
 				
-				
+				//Acción para la intersection+buffer dibujando una línea
+                    new GeoExt.Action(Ext.apply({
+                    text: 'Union',
+                    control: new OpenLayers.Control.DrawFeature(
+                        this.layer,OpenLayers.Handler.Path, {
+                        eventListeners: {
+                            featureadded: this.union,
+                            scope: this
+                        }
+                    })
+                }, actionDefaults)),
 				
 				//Acción para la intersection+buffer dibujando una línea
                     new GeoExt.Action(Ext.apply({
@@ -135,44 +146,156 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                             scope: this
                         }
                     })
+                }, actionDefaults)),
+				
+				//Acción para la probar WFS
+                    new GeoExt.Action(Ext.apply({
+                    text: 'Buffer',
+                    control: new OpenLayers.Control.DrawFeature(
+                        this.layer,OpenLayers.Handler.Point, {
+                        eventListeners: {
+                            featureadded: this.buffer,
+                            scope: this
+                        }
+                    })
                 }, actionDefaults))
 				
             ]); // Fin de agregacion de ACCIONES
         }, this);
     },
 	
+	// Proceso que ejecuta un BUFFER
+    buffer: function(evt) {
+		
+	
+		var wpsFormat= new OpenLayers.Format.WPSExecute(); 
+		var posicion= new OpenLayers.Format.WKT();
+		
+		//var que=evt.feature.geometry.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+
+   
+	    var doc= wpsFormat.write({ 
+        identifier: "JTS:buffer", 
+        dataInputs:[{ 
+            identifier:'geom', 
+            data:{ 
+                complexData:{
+					mimeType:"application/wkt", 
+					value: posicion.extractGeometry(evt.feature.geometry)
+							}},
+		   complexData:{
+			   default: {
+				   format: "text/xml; subtype=gml/3.1.1"
+		     }}},
+			{ 
+            identifier:'distance', 
+            data: { 
+			literalData:{
+					value: 1000 // este valor debera ser reemplazadado por uno que ingrese el usuario
+				}
+			}
+		}], 
+            responseForm:{ 
+                    rawDataOutput:{ 
+                        mimeType:"application/wkt", 
+                        identifier:"result" 
+                }} 
+		}); 
+ 
+			var posicionBuffer = OpenLayers.Request.POST({
+                    url: "geoserver/wps",
+                    data: doc,
+					headers: { "Content-Type": "text/xml;charset=utf-8" }, 
+					async: false
+            });
+
+		var i=0;
+		var cantidadCapasVisibles = this.map.layers.length; 
+
+		for(var i=0;i<cantidadCapasVisibles;i++){
+			if(this.map.layers[i].CLASS_NAME=="OpenLayers.Layer.WMS" && this.map.layers[i].visibility){
+			
+			var arregloWfs = this.wfs(this.map.layers[i].name);
+			
+				for (var i=0; i<arregloWfs.length; i++) {
+				var inter = this.verIntersecciones(arregloWfs[i][1],posicionBuffer.responseText);	
+															}
+				}	
+		}
+			
+	
+    },
+	
+	verIntersecciones: function(punto,poligono) {
+		
+		
+		
+	//	var poligono = vector_layer.features[0];
+    
+		
+		
+		var json = '{"type":"Feature", "geometry":{"type":"Point", "coordinates":[-60, -31]},"properties":{}}';
+        var s = document.createElement("script");
+        s.src = "http://spatialreference.org/projection/?json=" + escape(json) + "&inref=EPSG:4326&outref=EPSG:22185"
+        var aux = document.body.appendChild(s);
+
+		
+		var mipunto = OpenLayers.Geometry.fromWKT(punto);
+	    var mipoligono=OpenLayers.Geometry.fromWKT(poligono);
+		
+		var geometry = mipoligono.clone();
+        mipoligono.transform(4326, 22185);
+		
+		var respuesta = mipunto.intersects(mipoligono);
+		
+		
+		
+		
+		
+	//	alert(respuesta);
+},
+
+ project_out: function(data) {
+    if (data.coordinates) {
+      document.getElementById("out").innerHTML = data.coordinates.join(", ");
+    } else if (data.error) {
+        if (window.console) {
+            console.log(data.error);
+        }
+        document.getElementById('out').innerHTML = 'An error occurred.';
+    }    
+},
+	
 	/** Controlador de funcion para la interseccion de geometrias */
     wfs: function(evt) {
+		var feature = new Array();
 		
-		  var filter = '<Filter xmlns:ogc="http://www.opengis.net/ogc">';
-            filter += '<PropertyIsEqualTo>';
-            filter += '<PropertyName>nombre</PropertyName>';
-            
-            filter += '</PropertyIsEqualTo></Filter>';
-		
-		 OpenLayers.Request.GET({
+		var calleAux = new OpenLayers.Format.WKT();
+		    var respuesta = OpenLayers.Request.GET({
                     url: "geoserver/wfs",
                     params: {
-                            typeName: "Idesf:calles",
+                            typeName: "Idesf:"+evt,
                             service: "WFS",
                             version: "1.1.0",
                             outputFormat: "JSON", // Usamos JSON para que la respuesta sea mas rapida
                             readFormat: new OpenLayers.Format.GeoJSON(),
-                            srsName: "EPSG:27700",
                             request: "GetFeature"
                     },
-                    success: function(reply) {
-						alert(reply.responseText);
-                        //var format = new OpenLayers.Format.GeoJSON();
-                        //var feature = format.read(reply.responseText)[0];
-                     /*   that.centerOnFeature(feature.geometry);
-                        var address = feature.attributes.b_address;
-                        showAddress(address, feature.attributes.a_uprn);*/
-                    },
-                    failure: function(reply) {
-                            alert("failed");
-                    }
+					async: false
             });
+		  var format = new OpenLayers.Format.GeoJSON();
+          var featureAux = format.read(respuesta.responseText);
+		  var i=0;
+		    while(i<featureAux.length){
+		
+			var calleCoordenada = new Array(2);
+			  calleCoordenada[0]=featureAux[i].data.nombre;
+			  calleCoordenada[1]=calleAux.extractGeometry(featureAux[i].geometry);
+			  feature.push(calleCoordenada);
+			                                 
+			  i++;
+		  }
+		  return feature;
 	    },
 
 	 /** Controlador de funcion para la interseccion de geometrias */
@@ -269,7 +392,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 					async: false
             });
 	     
-                alert(respuesta.responseText);
+              //  alert(respuesta.responseText);
 						
     },
 	
@@ -294,6 +417,60 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             }
         }
         this.layer.removeFeatures([line]);
+    },
+	
+	 union: function(evt) {
+     
+	   //  var line = evt.feature;
+	 //  var poly = this.layer.features[0];
+	   var wpsFormat= new OpenLayers.Format.WPSExecute(); 
+
+	   
+	   var calle1 = new OpenLayers.Format.WKT().extractGeometry(evt.feature.geometry);
+	   var calle2 = new OpenLayers.Format.WKT().extractGeometry(this.layer.features[0].geometry);
+	   
+	    var doc= wpsFormat.write({ 
+        identifier: "JTS:union", 
+        dataInputs:[{ 
+            identifier:'geom', 
+            data:{ 
+                complexData:{
+					mimeType:"application/wkt", 
+					value: "MULTILINESTRING ((50 60, 70 80), (70 80, 90 100))"
+							}},
+		   complexData:{
+			   default: {
+				   format: "text/xml; subtype=gml/3.1.1"
+			   }}},
+			{ 
+            identifier:'geom', 
+            data:{ 
+                complexData:{
+					mimeType:"application/wkt", 
+					value: "MULTILINESTRING((10 20,50 60))"
+				}},
+		   complexData:{
+			   default: {
+				   format: "text/xml; subtype=gml/3.1.1"
+			   }}}], 
+
+            responseForm:{ 
+                    rawDataOutput:{ 
+                        mimeType:"application/wkt", 
+                        identifier:"result" 
+                }} 
+
+            }); 
+			  	  var respuesta = OpenLayers.Request.POST({
+                    url: "geoserver/wps",
+                    data: doc,
+					headers: { "Content-Type": "text/xml;charset=utf-8" }, 
+					async: false
+            });
+	     
+             //   alert(respuesta.responseText);
+	 	 	   	 
+	 
     },
 	
 
@@ -329,6 +506,10 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
         }
         this.layer.removeFeatures([line]);
     },
+	
+	
+	
+	
 
    	/** Función auxiliar para la adición de los resultados del proceso de la capa de vector */
     addResult: function(outputs) {

@@ -150,7 +150,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                     inputs: {
                         distance:
                             // buffer distance is 10 pixels
-                            2 * this.target.mapPanel.map.getResolution(),
+                            20 * this.target.mapPanel.map.getResolution(),
                         geom:
                             this.wpsClient.getProcess(
                                 'local', 'JTS:intersection'

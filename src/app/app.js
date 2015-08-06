@@ -98,7 +98,7 @@ var app = new gxp.Viewer({
 	{ ptype: "app_wpsdemo"}
 	
 	//,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
-	,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}
+	//,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}
 /*	,
 	{
     ptype: "gxp_featuremanager",
@@ -158,13 +158,23 @@ var app = new gxp.Viewer({
             // Capa Vector para mostrar nuestras geometrias y los resultados del procesamiento
             source: "ol",
             name: "sketch",
-            type: "OpenLayers.Layer.Vector"
+            type: "OpenLayers.Layer.Vector",
+			selected: true,
+			projection: "EPSG:4326"
         },
 		{
-            // Capa calles
+            // Capa calles    ---   Son capas WMS
             source: "local",
-            name: "Idesf:calles",
-			selected: true
+            name: "Idesf:hospitales",
+			selected: false,
+			visibility: false
+        },
+		{
+            // Capa calles   ---   Son capas WMS
+            source: "local",
+            name: "Idesf:policia",
+			selected: true,
+			visibility: true
         }],
         items: [{
             xtype: "gx_zoomslider",
