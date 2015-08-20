@@ -52,6 +52,18 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             };
 			// Inicio de agregacion de ACCIONES
             this.addActions([
+			
+			//Acción para calculo de union
+				 new GeoExt.Action(Ext.apply({
+                    text: 'Area Raster',
+                    control: new OpenLayers.Control.DrawFeature(
+                        this.layer, OpenLayers.Handler.Polygon, {
+                        eventListeners: {
+                            featureadded: this.area,
+                            scope: this
+                        }
+                    })
+                }, actionDefaults)),
                 // Acción para la elaboración de nuevas geometrías
                 new GeoExt.Action(Ext.apply({
                     text: 'Dibujar',
@@ -100,17 +112,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                     })
                 }, actionDefaults)),
 				
-					//Acción para calculo de union
-				 new GeoExt.Action(Ext.apply({
-                    text: 'Area',
-                    control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Path, {
-                        eventListeners: {
-                            featureadded: this.area,
-                            scope: this
-                        }
-                    })
-                }, actionDefaults)),
+					
 				
 				//Acción para la intersection+buffer dibujando una línea
                     new GeoExt.Action(Ext.apply({
@@ -313,33 +315,47 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
     },
 	
 	 /** Controlador de funcion para la division de geometrias */
-    intersects: function(evt) {
-        var line = evt.feature;
-		//alert(line.geometry);
-        var poly;
-       
-            poly = this.layer.features[0];
-			//alert(poly.geometry);
-            if (poly !== line) {
-              
-		 
-			 this.wpsClient.execute({
-                    server: 'local',
-                    process: 'JTS:intersects',
-                    inputs: { a: poly, b: line },
-					success: this.addResult2,
-					scope: this
-                });
-         
-            }
-			this.layer.removeFeatures([poly]);
-			this.layer.removeFeatures([line]);
-  
+    area: function(evt) {
+		
+        var wpsFormat= new OpenLayers.Format.WPSExecute(); 
+		var posicion= new OpenLayers.Format.WKT();
+		
+		//var que=evt.feature.geometry.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+
+   
+	    var doc= wpsFormat.write({ 
+        identifier: "JTS:area", 
+        dataInputs:[{ 
+            identifier:'geom', 
+            data:{ 
+                complexData:{
+					mimeType:"application/wkt", 
+					value: posicion.extractGeometry(evt.feature.geometry)
+							}},
+		   complexData:{
+			   default: {
+				   format: "text/xml; subtype=gml/3.1.1"
+		     }}}], 
+            responseForm:{ 
+                    rawDataOutput:{ 
+                        mimeType:"application/wkt", 
+                        identifier:"result" 
+                }} 
+		}); 
+ 
+			var posicionBuffer = OpenLayers.Request.POST({
+                    url: "geoserver/wps",
+                    data: doc,
+					headers: { "Content-Type": "text/xml;charset=utf-8" }, 
+					async: false
+            });
+           
+		   alert("El area seleccionada es de: "+posicionBuffer.responseText+"Mts2");
   
     },
 	
 	 /** Controlador de funcion para la division de geometrias */
-    area: function(evt) {
+    area2: function(evt) {
      //  var line = evt.feature;
 	 //  var poly = this.layer.features[0];
 	   var wpsFormat= new OpenLayers.Format.WPSExecute(); 

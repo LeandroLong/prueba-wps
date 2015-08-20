@@ -163,16 +163,16 @@ var app = new gxp.Viewer({
 			projection: "EPSG:4326"
         },
 		{
-            // Capa calles    ---   Son capas WMS
+            // Capa calles    ---   Son capas SHP
             source: "local",
             name: "Idesf:hospitales",
 			selected: false,
 			visibility: false
         },
 		{
-            // Capa calles   ---   Son capas WMS
+            // Capa calles   ---   Son capas SHP
             source: "local",
-            name: "Idesf:policia",
+            name: "Idesf:comisarias",
 			selected: true,
 			visibility: true
         }],
