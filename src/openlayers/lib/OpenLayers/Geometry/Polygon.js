@@ -140,10 +140,10 @@ OpenLayers.Geometry.Polygon = OpenLayers.Class(
     intersects: function(geometry) {
         var intersect = false;
         var i, len;
-        if(geometry.CLASS_NAME == "OpenLayers.Geometry.Point") {
+        if(geometry.CLASS_NAME == "OpenLayers.Geometry.Point" ) {
             intersect = this.containsPoint(geometry);
         } else if(geometry.CLASS_NAME == "OpenLayers.Geometry.LineString" ||
-                  geometry.CLASS_NAME == "OpenLayers.Geometry.LinearRing") {
+                  geometry.CLASS_NAME == "OpenLayers.Geometry.LinearRing" ) {
             // check if rings/linestrings intersect
             for(i=0, len=this.components.length; i<len; ++i) {
                 intersect = geometry.intersects(this.components[i]);

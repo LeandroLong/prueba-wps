@@ -8,9 +8,10 @@
  * @require OpenLayers/WPSClient.js
  * @require OpenLayers/Geometry.js
  * @require OpenLayers/Format/WFS.js
- * @requires OpenLayers/Format/WPSExecute.js
- * @requires OpenLayers/Format/WKT.js
+ * @require OpenLayers/Format/WPSExecute.js
+ * @require OpenLayers/Format/WKT.js
  * @require OpenLayers/Control/GetFeature.js
+ * @require OpenLayers/Proj4js.js
  */
 
  
@@ -173,9 +174,34 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 		var wpsFormat= new OpenLayers.Format.WPSExecute(); 
 		var posicion= new OpenLayers.Format.WKT();
 		
-		//var que=evt.feature.geometry.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
-
-   
+		
+      //  var p=posicion.extractGeometry(evt.feature.geometry);
+		
+		var aux="POINT(5500000 6537729.791671)";
+		//alert(evt.feature.geometry.x);
+		//alert(evt.feature.geometry.y);
+		
+		var p = new Proj4js.Point(evt.feature.geometry.x,evt.feature.geometry.y);
+	//	alert(p);
+		//var puntoSeleccionado="POINT" ()
+        
+		Proj4js.defs["EPSG:900913"] = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
+		var fuente = new Proj4js.Proj('EPSG:900913');
+		Proj4js.defs["EPSG:22185"] = "+proj=tmerc +lat_0=-90 +lon_0=-60 +k=1 +x_0=5500000 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+	    var dest = new Proj4js.Proj('EPSG:22185');
+		
+		//alert(p);
+		
+		// Convierte 900913 a 22185 para realizar las intersecciones
+		Proj4js.transform(fuente, dest, p);
+		//alert(p.x); 
+		
+		var puntoBuffer="POINT("+p.x+" "+""+p.x+")";
+		//alert(puntoBuffer);
+		
+		
+		
+		// Aca se realiza la consulta WPS Buffer
 	    var doc= wpsFormat.write({ 
         identifier: "JTS:buffer", 
         dataInputs:[{ 
@@ -183,7 +209,8 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             data:{ 
                 complexData:{
 					mimeType:"application/wkt", 
-					value: posicion.extractGeometry(evt.feature.geometry)
+					//value: posicion.extractGeometry(evt.feature.geometry)
+					value: puntoBuffer
 							}},
 		   complexData:{
 			   default: {
@@ -193,7 +220,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             identifier:'distance', 
             data: { 
 			literalData:{
-					value: 1000 // este valor debera ser reemplazadado por uno que ingrese el usuario
+					value: 10000 // este valor debera ser reemplazadado por uno que ingrese el usuario
 				}
 			}
 		}], 
@@ -211,6 +238,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 					async: false
             });
 
+			alert("el buffer es"+posicionBuffer.responseText);
 		var i=0;
 		var cantidadCapasVisibles = this.map.layers.length; 
 
@@ -228,46 +256,22 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	
     },
 	
-	verIntersecciones: function(punto,poligono) {
+	verIntersecciones: function(punto,buffer) {
 		
-		
-		
-	//	var poligono = vector_layer.features[0];
-    
-		
-		
-		var json = '{"type":"Feature", "geometry":{"type":"Point", "coordinates":[-60, -31]},"properties":{}}';
-        var s = document.createElement("script");
-        s.src = "http://spatialreference.org/projection/?json=" + escape(json) + "&inref=EPSG:4326&outref=EPSG:22185"
-        var aux = document.body.appendChild(s);
-
 		
 		var mipunto = OpenLayers.Geometry.fromWKT(punto);
-	    var mipoligono=OpenLayers.Geometry.fromWKT(poligono);
-		
-		var geometry = mipoligono.clone();
-        mipoligono.transform(4326, 22185);
-		
-		var respuesta = mipunto.intersects(mipoligono);
+	    var mibuffer=OpenLayers.Geometry.fromWKT(buffer);
 		
 		
+		var respuesta = mibuffer.intersects(mipunto);
 		
+		if(respuesta){
+		alert(respuesta);	
+		}	
 		
-		
-	//	alert(respuesta);
 },
 
- project_out: function(data) {
-    if (data.coordinates) {
-      document.getElementById("out").innerHTML = data.coordinates.join(", ");
-    } else if (data.error) {
-        if (window.console) {
-            console.log(data.error);
-        }
-        document.getElementById('out').innerHTML = 'An error occurred.';
-    }    
-},
-	
+
 	/** Controlador de funcion para la interseccion de geometrias */
     wfs: function(evt) {
 		var feature = new Array();

@@ -1,1 +1,1 @@
-suite-sdk debug C:\Proyecto\prueba
+suite-sdk debug C:\Proyecto\proyecto-wps
