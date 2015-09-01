@@ -248,16 +248,19 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 			var arregloWfs = this.wfs(this.map.layers[i].name);
 			
 				for (var j=0; j<arregloWfs.length; j++) {
-				inter = inter + this.verIntersecciones(arregloWfs[j][1],posicionBuffer.responseText);	
+				if(this.verIntersecciones(arregloWfs[j][1],posicionBuffer.responseText)){
+				 alert(arregloWfs[j][0]);	
+					
+				}	
 															}
 															
 															
 				}	
 				
-			arregloWfs=null;	
+			//arregloWfs=null;	
 		}
 		
-		alert(inter);
+	//	alert(inter);
 			
 	
     },
@@ -272,10 +275,10 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 		var respuesta = mibuffer.intersects(mipunto);
 		
 		if(respuesta){
-		return 1;	
+		return true;	
 		}	
 		
-		return 0;
+		return false;
 		
 },
 
