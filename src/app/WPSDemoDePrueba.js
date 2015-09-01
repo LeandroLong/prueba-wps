@@ -220,7 +220,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             identifier:'distance', 
             data: { 
 			literalData:{
-					value: 10000 // este valor debera ser reemplazadado por uno que ingrese el usuario
+					value: 1000 // este valor debera ser reemplazadado por uno que ingrese el usuario
 				}
 			}
 		}], 
