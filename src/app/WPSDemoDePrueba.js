@@ -170,7 +170,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	// Proceso que ejecuta un BUFFER
     buffer: function(evt) {
 		
-	
+	    this.layer.removeFeatures([evt.feature]);
 		var wpsFormat= new OpenLayers.Format.WPSExecute(); 
 		var posicion= new OpenLayers.Format.WKT();
 		
@@ -238,20 +238,26 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 					async: false
             });
 
-			alert("el buffer es"+posicionBuffer.responseText);
+		//	alert("el buffer es"+posicionBuffer.responseText);
 		var i=0;
 		var cantidadCapasVisibles = this.map.layers.length; 
-
-		for(var i=0;i<cantidadCapasVisibles;i++){
+        var inter =0;
+		for(i=0;i<cantidadCapasVisibles;i++){
 			if(this.map.layers[i].CLASS_NAME=="OpenLayers.Layer.WMS" && this.map.layers[i].visibility){
 			
 			var arregloWfs = this.wfs(this.map.layers[i].name);
 			
-				for (var i=0; i<arregloWfs.length; i++) {
-				var inter = this.verIntersecciones(arregloWfs[i][1],posicionBuffer.responseText);	
+				for (var j=0; j<arregloWfs.length; j++) {
+				inter = inter + this.verIntersecciones(arregloWfs[j][1],posicionBuffer.responseText);	
 															}
+															
+															
 				}	
+				
+			arregloWfs=null;	
 		}
+		
+		alert(inter);
 			
 	
     },
@@ -266,8 +272,10 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 		var respuesta = mibuffer.intersects(mipunto);
 		
 		if(respuesta){
-		alert(respuesta);	
+		return 1;	
 		}	
+		
+		return 0;
 		
 },
 
