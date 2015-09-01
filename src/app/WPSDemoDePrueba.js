@@ -196,7 +196,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 		Proj4js.transform(fuente, dest, p);
 		//alert(p.x); 
 		
-		var puntoBuffer="POINT("+p.x+" "+""+p.x+")";
+		var puntoBuffer="POINT("+p.x+" "+""+p.y+")";
 		//alert(puntoBuffer);
 		
 		
