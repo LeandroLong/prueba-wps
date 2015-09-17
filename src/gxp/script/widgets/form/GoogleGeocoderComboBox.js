@@ -62,7 +62,7 @@ gxp.form.GoogleGeocoderComboBox = Ext.extend(Ext.form.ComboBox, {
      */
     initComponent: function() {
         
-        // only enable when Google Maps API is available
+        // sólo se permitirá cuando Google Maps API está disponible
         this.disabled = true;
         var ready = !!(window.google && google.maps);
         if (!ready) {
@@ -73,12 +73,38 @@ gxp.form.GoogleGeocoderComboBox = Ext.extend(Ext.form.ComboBox, {
                 otherParams: gxp.plugins.GoogleSource.prototype.otherParams,
                 callback: this.prepGeocoder,
                 errback: function() {
-                    throw new Error("The Google Maps script failed to load within the given timeout.");
+                    throw new Error("El Script de Google Maps no se pudo cargar en el tiempo de espera dado.");
                 },
                 scope: this
             });
         } else {
-            // call in the next turn to complete initialization
+			
+			var directionsService = new google.maps.DirectionsService();
+			
+			var chicago = {lat: -60, lng: -31.1};
+			var indianapolis = {lat: -59, lng: -31.2};
+			
+			var request = {
+			  origin: chicago, 
+			  destination: indianapolis,
+			  travelMode: google.maps.DirectionsTravelMode.DRIVING,
+			  unitSystem: google.maps.DirectionsUnitSystem.METRIC
+			};
+			
+			
+			directionsService.route(request, function(response, status) {
+			  if (status == google.maps.DirectionsStatus.OK) {
+				//directionsDisplay.setDirections(response);
+				alert("ENTRAAAA");
+			  } else {
+				alert('Error: ' + status);
+			  }
+			});
+			
+			//alert(request.origin);
+			
+			
+            // llama en el siguiente turno para completar la inicialización
             window.setTimeout((function() {
                 this.prepGeocoder();
             }).createDelegate(this), 0);
@@ -111,7 +137,7 @@ gxp.form.GoogleGeocoderComboBox = Ext.extend(Ext.form.ComboBox, {
         var geocoder = new google.maps.Geocoder();
         
 
-        // create an async proxy for getting geocoder results
+        // crear un proxy asíncrona para obtener resultados geocodificador
         var api = {};
         api[Ext.data.Api.actions.read] = true;
         var proxy = new Ext.data.DataProxy({api: api});

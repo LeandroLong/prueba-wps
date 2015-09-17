@@ -31,10 +31,9 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
         });
 		
 		    this.map = target.mapPanel.map;
-		/*	map.events.on({
-				addlayer: this.raiseLayer,
-				scope: this
-				});*/
+					
+		
+			
 		
 		  
         // Añade botones de acción cuando el VISOR (wiever) está listo
@@ -44,6 +43,13 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 name: 'sketch',
                 source: 'ol'
             }).getLayer();
+			
+			
+			this.directionsDisplay = new google.maps.DirectionsRenderer;
+			this.mapaMio = this.map.layers[1].mapObject;	
+			this.directionsDisplay.setMap(this.mapaMio);	
+			this.directionsService = new google.maps.DirectionsService;
+			
             // Algunos valores predeterminados
             var actionDefaults = {
                 map: target.mapPanel.map,
@@ -170,34 +176,30 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	// Proceso que ejecuta un BUFFER
     buffer: function(evt) {
 		
+			
 	    this.layer.removeFeatures([evt.feature]);
 		var wpsFormat= new OpenLayers.Format.WPSExecute(); 
 		var posicion= new OpenLayers.Format.WKT();
 		
 		
-      //  var p=posicion.extractGeometry(evt.feature.geometry);
+			
 		
-		var aux="POINT(5500000 6537729.791671)";
-		//alert(evt.feature.geometry.x);
-		//alert(evt.feature.geometry.y);
-		
+		    
 		var p = new Proj4js.Point(evt.feature.geometry.x,evt.feature.geometry.y);
-	//	alert(p);
-		//var puntoSeleccionado="POINT" ()
+	
         
 		Proj4js.defs["EPSG:900913"] = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
 		var fuente = new Proj4js.Proj('EPSG:900913');
 		Proj4js.defs["EPSG:22185"] = "+proj=tmerc +lat_0=-90 +lon_0=-60 +k=1 +x_0=5500000 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
 	    var dest = new Proj4js.Proj('EPSG:22185');
 		
-		//alert(p);
-		
-		// Convierte 900913 a 22185 para realizar las intersecciones
+			
+		// Convierte p desde el sistema de coordenadas 900913 a 22185 para realizar las intersecciones
 		Proj4js.transform(fuente, dest, p);
-		//alert(p.x); 
+		
 		
 		var puntoBuffer="POINT("+p.x+" "+""+p.y+")";
-		//alert(puntoBuffer);
+		
 		
 		
 		
@@ -238,7 +240,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 					async: false
             });
 
-		//	alert("el buffer es"+posicionBuffer.responseText);
+		
 		var i=0;
 		var cantidadCapasVisibles = this.map.layers.length; 
         var inter =0;
@@ -249,7 +251,11 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 			
 				for (var j=0; j<arregloWfs.length; j++) {
 				if(this.verIntersecciones(arregloWfs[j][1],posicionBuffer.responseText)){
-				 alert(arregloWfs[j][0]);	
+				// alert(arregloWfs[j][0]);	
+				 
+				 this.dibujaRuta(p,arregloWfs[j][1]);
+				 
+			
 					
 				}	
 															}
@@ -257,13 +263,65 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 															
 				}	
 				
-			//arregloWfs=null;	
+			
 		}
 		
-	//	alert(inter);
+		
 			
 	
     },
+	
+	dibujaRuta: function(pOrigen,pDest) { 
+	
+	
+	
+	var directionsDisplay = this.directionsDisplay;
+
+	
+	
+	
+	var puntoDest = OpenLayers.Geometry.fromWKT(pDest);
+	
+	var puntoOrigen = new Proj4js.Point(pOrigen.x,pOrigen.y);
+	var puntoDestino = new Proj4js.Point(puntoDest.components[0].x,puntoDest.components[0].y);	
+	
+	
+	Proj4js.defs["EPSG:900913"] = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
+	var origen1 = new Proj4js.Proj('EPSG:900913');
+	Proj4js.defs["EPSG:22185"] = "+proj=tmerc +lat_0=-90 +lon_0=-60 +k=1 +x_0=5500000 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+	var origen2 = new Proj4js.Proj('EPSG:22185');
+	Proj4js.defs["EPSG:4326"] = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+	var destinoUnico = new Proj4js.Proj('EPSG:4326');
+	
+	Proj4js.transform(origen2, destinoUnico, puntoOrigen);
+	Proj4js.transform(origen2, destinoUnico, puntoDestino);
+	
+	var origen = {lat: puntoOrigen.y, lng: puntoOrigen.x};
+	var destino = {lat: puntoDestino.y, lng: puntoDestino.x};
+			
+			var p1 = new google.maps.LatLng(puntoOrigen.y, puntoOrigen.x);
+			var p2 = new google.maps.LatLng(puntoDestino.y, puntoDestino.x);
+			 //alert("zoom 1 "+this.map.zoom);						
+				
+					
+			  this.directionsService.route({
+					origin: p1,  // Haight.
+					destination: p2,  // Ocean Beach.
+					
+					travelMode: google.maps.TravelMode.TRANSIT
+				  }, function(response, status) {
+					if (status == google.maps.DirectionsStatus.OK) {
+					 directionsDisplay.setDirections(response);
+					} else {
+					  window.alert('Directions request failed due to ' + status);
+					}
+				  });
+			
+			var aux;
+			
+			
+		
+		},
 	
 	verIntersecciones: function(punto,buffer) {
 		
@@ -544,7 +602,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 
    	/** Función auxiliar para la adición de los resultados del proceso de la capa de vector */
     addResult: function(outputs) {
-		//alert(outputs.result);
+		
         this.layer.addFeatures(outputs.result);
     }
 	

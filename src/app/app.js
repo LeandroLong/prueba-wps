@@ -33,7 +33,9 @@
  * @require plugins/FeatureEditor.js
  */
 
-var app = new gxp.Viewer({
+ 
+ 
+ var app = new gxp.Viewer({
     portalConfig: {
         layout: "border",
         region: "center",
@@ -97,7 +99,7 @@ var app = new gxp.Viewer({
 	//{ ptype: "app_convertir"},
 	{ ptype: "app_wpsdemo"}
 	
-	//,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
+	,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
 	//,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}
 /*	,
 	{
@@ -150,9 +152,9 @@ var app = new gxp.Viewer({
         center: [-6755000.758211, -3715572.3184791],
         zoom: 12,
         layers: [
-			{
-            source: "osm",
-            name: "mapnik",
+			{	
+            source: "google",
+            name: "ROADMAP",
             group: "background"
         },  {
             // Capa Vector para mostrar nuestras geometrias y los resultados del procesamiento
