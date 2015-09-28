@@ -254,6 +254,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 				// alert(arregloWfs[j][0]);	
 				 
 				 this.dibujaRuta(p,arregloWfs[j][1]);
+				 //alert("que pasa aca?");
 				 
 			
 					
@@ -299,29 +300,67 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	var origen = {lat: puntoOrigen.y, lng: puntoOrigen.x};
 	var destino = {lat: puntoDestino.y, lng: puntoDestino.x};
 			
-			var p1 = new google.maps.LatLng(puntoOrigen.y, puntoOrigen.x);
-			var p2 = new google.maps.LatLng(puntoDestino.y, puntoDestino.x);
-			 //alert("zoom 1 "+this.map.zoom);						
+	var p1 = new google.maps.LatLng(puntoOrigen.y, puntoOrigen.x);
+	var p2 = new google.maps.LatLng(puntoDestino.y, puntoDestino.x);
+							
 				
 					
-			  this.directionsService.route({
-					origin: p1,  // Haight.
-					destination: p2,  // Ocean Beach.
-					
-					travelMode: google.maps.TravelMode.TRANSIT
-				  }, function(response, status) {
-					if (status == google.maps.DirectionsStatus.OK) {
+	//this.aux(directionsDisplay,p1,p2,function(){var pixel = new OpenLayers.LonLat(-6757121.8857455,-3716279.3609906);
+	//			  this.app.mapPanel.map.moveTo(pixel,12,true);});
+	
+	this.haceAlgo(directionsDisplay,p1,p2,function(){
+		
+		//var pixel = new OpenLayers.LonLat(-6757121.8857455,-3716279.3609906);
+		//this.app.mapPanel.map.moveTo(pixel,12,true);	
+		
+        
+        
+    })
+	
+	//google.maps.event.addListener(this.directionsDisplay,"directions_changed", function() { alert('holass'); } );
+	},
+
+
+	haceAlgo: function(directionsDisplay,p1,p2,callback){
+		
+		this.directionsService.route({
+		origin: p1,
+		destination: p2,
+		travelMode: google.maps.TravelMode.TRANSIT},
+			function(response, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
 					 directionsDisplay.setDirections(response);
+					 window.setTimeout(function () {
+						 Proj4js.defs["EPSG:900913"] = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
+						 var origen1 = new Proj4js.Proj('EPSG:900913');
+						 Proj4js.defs["EPSG:22185"] = "+proj=tmerc +lat_0=-90 +lon_0=-60 +k=1 +x_0=5500000 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+	                     var origen2 = new Proj4js.Proj('EPSG:22185');
+	                     Proj4js.defs["EPSG:4326"] = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+	                     var destinoUnico = new Proj4js.Proj('EPSG:4326');
+						 
+						 var puntoCentro = new Proj4js.Point(directionsDisplay.A.D[0].location.F,directionsDisplay.A.D[0].location.A);
+						 
+						 //Reproyecta los puntos
+						 Proj4js.transform(destinoUnico, origen1, puntoCentro);
+						// Proj4js.transform(destinoUnico, origen1, puntoDestino);
+						 
+						 //Crea un punto donde va a centrar el mapa una vez que dibuje la ruta
+						 var pixel = new OpenLayers.LonLat(puntoCentro.x,puntoCentro.y);
+						 //Centra el mapa al punto especificado
+						 this.app.mapPanel.map.moveTo(pixel,14,true);}, '500');
+					 		
+					 					 					 
 					} else {
 					  window.alert('Directions request failed due to ' + status);
 					}
-				  });
-			
-			var aux;
-			
-			
+				  })
 		
-		},
+		
+		
+
+			
+				  }
+				,
 	
 	verIntersecciones: function(punto,buffer) {
 		
@@ -502,7 +541,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                     success: this.addResult,
                     scope: this
                 });
-                this.layer.removeFeatures([poly]);
+                this.layer.removeFeatures([poly]);s
             }
         }
         this.layer.removeFeatures([line]);

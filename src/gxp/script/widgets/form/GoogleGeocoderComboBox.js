@@ -91,17 +91,17 @@ gxp.form.GoogleGeocoderComboBox = Ext.extend(Ext.form.ComboBox, {
 			  unitSystem: google.maps.DirectionsUnitSystem.METRIC
 			};
 			
+						
+						directionsService.route(request, function(response, status) {
+						  if (status == google.maps.DirectionsStatus.OK) {
+							//directionsDisplay.setDirections(response);
+							alert("ENTRAAAA");
+						  } else {
+							alert('Error: ' + status);
+						  }
+						});
 			
-			directionsService.route(request, function(response, status) {
-			  if (status == google.maps.DirectionsStatus.OK) {
-				//directionsDisplay.setDirections(response);
-				alert("ENTRAAAA");
-			  } else {
-				alert('Error: ' + status);
-			  }
-			});
-			
-			//alert(request.origin);
+		
 			
 			
             // llama en el siguiente turno para completar la inicialización
