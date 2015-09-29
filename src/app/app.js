@@ -11,24 +11,18 @@
  * @require plugins/Zoom.js
  * @require plugins/AddLayers.js
  * @require plugins/RemoveLayer.js
- * @require RowExpander.js
- * @require plugins/DrawBox.js
  * @require OpenLayers/Layer/Vector.js
  * @require OpenLayers/Renderer/Canvas.js
  * @require OpenLayers/Renderer/VML.js
  * @require GeoExt/widgets/ZoomSlider.js
- * @require OpenLayers/WPSClient.js
- * @require plugins/AddLayers.js
- * @require plugins/RemoveLayer.js
  * @require RowExpander.js
  * @require plugins/GoogleSource.js
  * @require WPSDemoDePrueba.js
- * @require ConvertirSeleccionables.js
+ * @require AreaInfluencia.js
  * @require plugins/WMSGetFeatureInfo.js
  * @require plugins/GoogleGeocoder.js
  * @require plugins/FeatureGrid.js
  * @require plugins/FeatureManager.js
- * @require BuscaIntersecciones.js
  * @require plugins/SnappingAgent.js
  * @require plugins/FeatureEditor.js
  */
@@ -97,7 +91,7 @@
 },
 
 	//{ ptype: "app_convertir"},
-	{ ptype: "app_wpsdemo"}
+	{ ptype: "app_areainfluencia"}
 	
 	,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
 	//,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}

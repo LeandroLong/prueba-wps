@@ -31,12 +31,8 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
         });
 		
 		    this.map = target.mapPanel.map;
-					
-		
-			
-		
-		  
-        // Añade botones de acción cuando el VISOR (wiever) está listo
+							  
+        // Añade botones de acción cuando el VISOR GPX(wiever) está listo
         target.on('ready', function() {
             // Obtiene una referencia a la capa de vector de app.js
             this.layer = target.getLayerRecordFromMap({
@@ -44,7 +40,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 source: 'ol'
             }).getLayer();
 			
-			
+			//Inicializa las variables que usara GMaps para calculo de ruta
 			this.directionsDisplay = new google.maps.DirectionsRenderer;
 			this.mapaMio = this.map.layers[1].mapObject;	
 			this.directionsDisplay.setMap(this.mapaMio);	
@@ -59,6 +55,18 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
             };
 			// Inicio de agregacion de ACCIONES
             this.addActions([
+			
+			//Acción para la probar WFS
+                    new GeoExt.Action(Ext.apply({
+                    text: 'Area de Influencia',
+                    control: new OpenLayers.Control.DrawFeature(
+                        this.layer,OpenLayers.Handler.Point, {
+                        eventListeners: {
+                            featureadded: this.buffer,
+                            scope: this
+                        }
+                    })
+                }, actionDefaults)),
 			
 			//Acción para calculo de union
 				 new GeoExt.Action(Ext.apply({
@@ -155,19 +163,9 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                             scope: this
                         }
                     })
-                }, actionDefaults)),
-				
-				//Acción para la probar WFS
-                    new GeoExt.Action(Ext.apply({
-                    text: 'Buffer',
-                    control: new OpenLayers.Control.DrawFeature(
-                        this.layer,OpenLayers.Handler.Point, {
-                        eventListeners: {
-                            featureadded: this.buffer,
-                            scope: this
-                        }
-                    })
                 }, actionDefaults))
+				
+				
 				
             ]); // Fin de agregacion de ACCIONES
         }, this);
@@ -176,8 +174,13 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	// Proceso que ejecuta un BUFFER
     buffer: function(evt) {
 		
+		for(var z=this.layer.features.length-1; z>=0; --z){
 			
-	    this.layer.removeFeatures([evt.feature]);
+			 this.layer.removeFeatures(this.layer.features[z]);
+		}	
+	   
+		
+		
 		var wpsFormat= new OpenLayers.Format.WPSExecute(); 
 		var posicion= new OpenLayers.Format.WKT();
 		
@@ -204,7 +207,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 		
 		
 		// Aca se realiza la consulta WPS Buffer
-	    var doc= wpsFormat.write({ 
+	    var doc1= wpsFormat.write({ 
         identifier: "JTS:buffer", 
         dataInputs:[{ 
             identifier:'geom', 
@@ -213,6 +216,38 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 					mimeType:"application/wkt", 
 					//value: posicion.extractGeometry(evt.feature.geometry)
 					value: puntoBuffer
+					
+							}},
+		   complexData:{
+			   default: {
+				   format: "text/xml; subtype=gml/3.1.1"
+		     }}},
+			{ 
+            identifier:'distance', 
+            data: { 
+			literalData:{
+					value: 1000 // este valor debera ser reemplazadado por uno que ingrese el usuario
+				}
+			}
+		}], 
+            responseForm:{ 
+                    rawDataOutput:{ 
+                        mimeType:"application/wkt", 
+                        identifier:"result" 
+                }} 
+		}); 
+		
+		
+		// Aca se realiza la consulta WPS Buffer
+	    var doc2= wpsFormat.write({ 
+        identifier: "JTS:buffer", 
+        dataInputs:[{ 
+            identifier:'geom', 
+            data:{ 
+                complexData:{
+					mimeType:"application/wkt", 
+					value: posicion.extractGeometry(evt.feature.geometry)
+					//value: puntoBuffer
 							}},
 		   complexData:{
 			   default: {
@@ -233,14 +268,29 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 }} 
 		}); 
  
-			var posicionBuffer = OpenLayers.Request.POST({
+			var bufferInterseccion = OpenLayers.Request.POST({
                     url: "geoserver/wps",
-                    data: doc,
+                    data: doc1,
 					headers: { "Content-Type": "text/xml;charset=utf-8" }, 
 					async: false
             });
-
+			
+			
+			var bufferDibujar = OpenLayers.Request.POST({
+                    url: "geoserver/wps",
+                    data: doc2,
+					headers: { "Content-Type": "text/xml;charset=utf-8" }, 
+					async: false
+            });
+			
+			
+		var mypolygon = new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(bufferDibujar.responseText));
 		
+        
+		
+	
+		this.layer.addFeatures([mypolygon]);
+		//this.layer.addFeatures([evt.feature]);
 		var i=0;
 		var cantidadCapasVisibles = this.map.layers.length; 
         var inter =0;
@@ -250,27 +300,11 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 			var arregloWfs = this.wfs(this.map.layers[i].name);
 			
 				for (var j=0; j<arregloWfs.length; j++) {
-				if(this.verIntersecciones(arregloWfs[j][1],posicionBuffer.responseText)){
+				if(this.verIntersecciones(arregloWfs[j][1],bufferInterseccion.responseText)){
 				// alert(arregloWfs[j][0]);	
 				 
 				 this.dibujaRuta(p,arregloWfs[j][1]);
-				 //alert("que pasa aca?");
-				 
-			
-					
-				}	
-															}
-															
-															
-				}	
-				
-			
-		}
-		
-		
-			
-	
-    },
+			}}}}},
 	
 	dibujaRuta: function(pOrigen,pDest) { 
 	
@@ -303,21 +337,12 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 	var p1 = new google.maps.LatLng(puntoOrigen.y, puntoOrigen.x);
 	var p2 = new google.maps.LatLng(puntoDestino.y, puntoDestino.x);
 							
-				
-					
-	//this.aux(directionsDisplay,p1,p2,function(){var pixel = new OpenLayers.LonLat(-6757121.8857455,-3716279.3609906);
-	//			  this.app.mapPanel.map.moveTo(pixel,12,true);});
-	
+
 	this.haceAlgo(directionsDisplay,p1,p2,function(){
-		
-		//var pixel = new OpenLayers.LonLat(-6757121.8857455,-3716279.3609906);
-		//this.app.mapPanel.map.moveTo(pixel,12,true);	
-		
-        
+	       
         
     })
 	
-	//google.maps.event.addListener(this.directionsDisplay,"directions_changed", function() { alert('holass'); } );
 	},
 
 
@@ -347,7 +372,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
 						 //Crea un punto donde va a centrar el mapa una vez que dibuje la ruta
 						 var pixel = new OpenLayers.LonLat(puntoCentro.x,puntoCentro.y);
 						 //Centra el mapa al punto especificado
-						 this.app.mapPanel.map.moveTo(pixel,14,true);}, '500');
+						 this.app.mapPanel.map.moveTo(pixel,14,true);}, '700');
 					 		
 					 					 					 
 					} else {
@@ -541,7 +566,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                     success: this.addResult,
                     scope: this
                 });
-                this.layer.removeFeatures([poly]);s
+                this.layer.removeFeatures([poly]);
             }
         }
         this.layer.removeFeatures([line]);
