@@ -17,6 +17,7 @@
  * @require GeoExt/widgets/ZoomSlider.js
  * @require RowExpander.js
  * @require plugins/GoogleSource.js
+ * @require BuscaIntersecciones.js
  * @require WPSDemoDePrueba.js
  * @require AreaInfluencia.js
  * @require plugins/WMSGetFeatureInfo.js
@@ -86,14 +87,12 @@
 	
 //	{  ptype: "gxp_zoom",  actionTarget: "map.tbar" },
 //	{  ptype: "gxp_navigationhistory", actionTarget: "map.tbar"},
-	{
-    ptype: "gxp_wmsgetfeatureinfo"
-},
+	//{  ptype: "gxp_wmsgetfeatureinfo"},
 
 	//{ ptype: "app_convertir"},
-	{ ptype: "app_areainfluencia"}
+	{ ptype: "app_areainfluencia",outputTarget: "map.tbar"}
 	
-	,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
+//	,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
 	//,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}
 /*	,
 	{

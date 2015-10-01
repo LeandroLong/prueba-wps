@@ -51,7 +51,7 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 			
 			//Acción para la probar WFS
                     new GeoExt.Action(Ext.apply({
-                    text: 'Area de Influencia',
+                    text: 'Area de Influencia: ',
                     control: new OpenLayers.Control.DrawFeature(
                         this.layer,OpenLayers.Handler.Point, {
                         eventListeners: {
@@ -59,10 +59,25 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
                             scope: this
                         }
                     })
-                }, actionDefaults))		
+                }, actionDefaults))					
 				
 				
-            ]); // Fin de agregacion de ACCIONES
+            ]); // Fin de agregación de ACCIONES
+			
+		// Crea un combo para que el usuario seleccione un radio de influencia
+			
+			  var combo = new Ext.form.ComboBox({
+						emptyText:'Seleccione un rango..',
+						typeAhead: true,
+						editable: false,
+						store: ['200 mts', '350 mts', '500 mts', '1000 mts', '1500 mts', '2000 mts'],
+						triggerAction: 'all',
+						mode: 'local',
+						width: 80,
+						forceSelection: true
+					});
+			
+			this.addOutput(combo);
         }, this);
     },
 	
@@ -93,7 +108,12 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 	 // Arma el punto que sera usado para calcular el buffer
 		var puntoBuffer="POINT("+p.x+" "+""+p.y+")";
 		
-		
+	 //	Recupera el rango seleccionado por el usuario
+	 
+	   var rango = this.output[0].lastSelectionText;
+	   var valor = parseInt(rango.split(" ",1));
+	  // alert(valor);
+	 
 	 // Se arma el request para calcular el buffer para interseccion
 	    var doc1= wpsFormat.write({ 
         identifier: "JTS:buffer", 
@@ -111,7 +131,7 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
             identifier:'distance', 
             data: { 
 			literalData:{
-					value: 1000 // este valor debera ser reemplazadado por uno que ingrese el usuario
+					value: valor // este valor debera ser reemplazadado por uno que ingrese el usuario
 				}
 			}
 		}], 
@@ -140,7 +160,7 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
             identifier:'distance', 
             data: { 
 			literalData:{
-					value: 1150 // este valor debera ser reemplazadado por uno que ingrese el usuario
+					value: valor + (valor * 0.15) // sumamos 150 para que el dibuje se corresponda con la interseccion, es una cuestion de grafica 
 				}
 			}
 		}], 
@@ -183,12 +203,50 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 		//	Para cada capa visible busca la interseccion con el buffer
 		    for (var j=0; j<arregloWfs.length; j++) {
 				if(this.verIntersecciones(arregloWfs[j][1],bufferInterseccion.responseText)){
-					this.dibujaRuta(p,arregloWfs[j][1]);
+					
+					
+				//	alert(arregloWfs[j][0] + arregloWfs[j][1]);
+					
+					//this.dibujaRuta(p,arregloWfs[j][1]);
 																							}
 													}
 			
 											}
 									}
+									
+							
+
+   var panel = new Ext.Window({
+	   
+		title: "Lugares Cercanos a Usted",
+        height: 400,
+        width: 600,
+		collapsible: false,
+		maximizable: false,
+		animCollapse: false,
+		dockedItems: [{
+            xtype: 'toolbar',
+            dock: 'bottom',
+            ui: 'footer',
+            layout: {
+                pack: 'center'
+            },
+            items: [{
+                minWidth: 80,
+                text: 'Send'
+            },{
+                minWidth: 80,
+                text: 'Cancel'
+            }]
+        }]
+						});
+						
+						
+		panel.show();
+
+  
+
+						
 									
 		/** UNA VEZ CALCULADOS TODOS LOS PUNTOS QUE SE INTERSECAN CON EL BUFFER, SE DEBERIA MOSTRAR POR POPUP
 		    DICHOS PUNTOS Y DEJAR QUE EL USUARIO ELIJA ALGUN PUNTO Y DAR LA OPCION DE CALCULAR LA RUTA*/							
