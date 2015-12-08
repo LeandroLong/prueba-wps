@@ -72,7 +72,7 @@
 		title: "Lugares cercanos a Usted",
         id: "lugaresCercanos",
         height: 270,
-		hidden: false,
+		hidden: true,
 		outputTarget: "lugaresCercanos"
     }]
 			}],

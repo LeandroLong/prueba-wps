@@ -59,6 +59,7 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 			//Acción para la probar WFS
                     new GeoExt.Action(Ext.apply({
                     text: 'Area de Influencia: ',
+					handler: this.muestraMenu.createDelegate(this),
                     control: new OpenLayers.Control.DrawFeature(
                         this.layer,OpenLayers.Handler.Point, {
                         eventListeners: {
@@ -286,8 +287,9 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 		items: grid
 				});
 						
-			
-	
+			if(this.mostrarMenu){
+		this.mostrarMenu.removeOutput();
+			}
 		this.mostrarMenu = new MostrarMenu();
 		this.mostrarMenu.addOutput(grid);
 
@@ -421,7 +423,29 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 			this.layer.removeFeatures([poly]);
 			this.layer.removeFeatures([line]);
 			}}
-    }
+    },
+	
+	muestraMenu: function(objeto){
+			var arbol = Ext.getCmp('arbolCapas');
+			var lugar=Ext.getCmp('lugaresCercanos');
+			
+			
+		if(objeto.pressed){
+			lugar.show();
+			arbol.ownerCt.doLayout();
+			
+		}
+		else {
+			lugar.hide();
+			arbol.ownerCt.doLayout();
+		}
+		
+		
+		
+		
+       
+	
+	}
 
 });
 

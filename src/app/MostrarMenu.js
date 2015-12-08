@@ -20,12 +20,14 @@ var MostrarMenu=Ext.extend(gxp.plugins.Tool,{
 	autoExpand:null,
 	
 	outputTarget: "lugaresCercanos",
+	
+	hidden: true,
 
 
-		addOutput:function(a){
+	addOutput:function(a){
 			
 					
-		MostrarMenu.superclass.addOutput.call(this,a)}
+	MostrarMenu.superclass.addOutput.call(this,a)}
 		
 		});
 
