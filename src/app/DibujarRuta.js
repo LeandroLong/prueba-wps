@@ -12,28 +12,21 @@
  * @require OpenLayers/Format/WKT.js
  * @require OpenLayers/Control/GetFeature.js
  * @require OpenLayers/Proj4js.js
- * @require MostrarMenu.js
  */
 
  
-var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
+var DibujarRuta = Ext.extend(gxp.plugins.Tool, {
 
-    ptype: 'app_areainfluencia',
+    ptype: 'app_dibujarruta',
     
     /** Inicio del plugin */
     init: function(target) {
-        AreaInfluenciaBuffer.superclass.init.apply(this, arguments);
+        DibujarRuta.superclass.init.apply(this, arguments);
 		
-		
-		
-			
 		    this.map = target.mapPanel.map;
-		//	this.lugares = AreaInfluenciaBuffer.superclass.constructor.call(this,target.portalConfig.items[2].items[1]); 
 							  
         // Añade botones de acción cuando el VISOR GPX(wiever) está listo
         target.on('ready', function() {
-			
-			
             // Obtiene una referencia a la capa de vector de app.js
             this.layer = target.getLayerRecordFromMap({
                 name: 'sketch',
@@ -53,12 +46,46 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
                 toggleGroup: this.ptype,
                 allowDepress: true
             };
+			
+			/**		Inicio prueba	*/
+			this.preview = new Ext.Panel({
+        id: 'preview',
+        region: 'south',
+        cls:'preview',
+        autoScroll: true,
+
+        tbar: [{
+            id:'tab',
+            text: 'View in New Tab',
+            iconCls: 'new-tab',
+            disabled:true,
+            scope: this
+        },
+        '-',
+        {
+            id:'win',
+            text: 'Go to Post',
+            iconCls: 'new-win',
+            disabled:true,
+            scope: this
+        }],
+
+        clear: function(){
+            this.body.update('');
+            var items = this.topToolbar.items;
+            items.get('tab').disable();
+            items.get('win').disable();
+        }
+    });
+	
+		/**  Fin Prueba */
 			// Inicio de agregacion de ACCIONES
             this.addActions([
 			
 			//Acción para la probar WFS
                     new GeoExt.Action(Ext.apply({
                     text: 'Area de Influencia: ',
+					handler: this.muestraMenu.createDelegate(this, []),
                     control: new OpenLayers.Control.DrawFeature(
                         this.layer,OpenLayers.Handler.Point, {
                         eventListeners: {
@@ -217,13 +244,15 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 					datosLugares[0]= arregloWfs[j][0];
 					datosLugares[1]= arregloWfs[j][1];
 					lugares.push(datosLugares);
-				
+					
+				//	alert(arregloWfs[j][0] + arregloWfs[j][1]);
+					
+					//this.dibujaRuta(p,arregloWfs[j][1]);
 																							}
 													}
 			
 											}
 									}
-
 	
     // create the data store
     var store = new Ext.data.ArrayStore({
@@ -256,17 +285,20 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
                 width: 85,
                 items: [{
                     icon   : './verRuta.png',  // Use a URL in the icon config
-                    tooltip: 'Click para ver la ruta...'
+                    tooltip: 'Click para ver la ruta...',
+                    handler: function(grid, rowIndex,mapaMio,directionsDisplay,panel) {
+						
+                        
+                    }
                 }]
             }
-        ],
-		listeners: {
+			],
+			
+			
+				listeners : {
 					cellclick: function(dv, record, item, index, e) {
-					this.dibujaRuta(p,dv.initialConfig.store.data.items[record].json[1]);	
-					this.panel.close();
-					},
-					scope: this
-			},
+						this.dibujaRuta(1,1);
+				}},
 		
         stripeRows: true,
         autoExpandColumn: 'lugar',
@@ -274,7 +306,10 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
         width: 500
     });
 	
-		
+	// grid.render(Ext.getBody());
+	
+	/**Hasta acaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa*/
+
 		this.panel = new Ext.Window({
 	   
 		title: "Lugares Cercanos a Usted",
@@ -286,10 +321,8 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 		items: grid
 				});
 						
-			
-	
-		this.mostrarMenu = new MostrarMenu();
-		this.mostrarMenu.addOutput(grid);
+						
+		this.panel.show();
 
 
 						
@@ -298,10 +331,29 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 		    DICHOS PUNTOS Y DEJAR QUE EL USUARIO ELIJA ALGUN PUNTO Y DAR LA OPCION DE CALCULAR LA RUTA*/							
 		
 		},
+		
+		prueba: function() { 
+		
+		
+		 var preview = this.preview;
+            var right = Ext.getCmp('right-preview');
+            var bot = Ext.getCmp('bottom-preview');
+           // var btn = this.grid.getTopToolbar().items.get(2);
+            
+                    bot.hide();
+                    right.add(preview);
+                    right.show();
+                    right.ownerCt.doLayout();
+                    btn.setIconClass('preview-right');
+               
+		
+		},
 	
-	/** Funcion que recibe un punto de origen y un punto de destino para dibujar la ruta en Google Maps*/
+	
 	
 	dibujaRuta: function(pOrigen,pDest) { 	
+	
+	DibujarRuta.superclass.init.apply(this, arguments);
 	
 	var directionsDisplay = this.directionsDisplay;
 
@@ -327,11 +379,11 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 	var p1 = new google.maps.LatLng(puntoOrigen.y, puntoOrigen.x);
 	var p2 = new google.maps.LatLng(puntoDestino.y, puntoDestino.x);
 							
-    // Los puntos deberan estar en EPSG: 4326 para que sean pasados por parametros a los servicios de Google Maps
+
 	this.directionsService.route({
-		origin: origen,
-		destination: destino,
-		travelMode: google.maps.TravelMode.WALKING},
+		origin: p1,
+		destination: p2,
+		travelMode: google.maps.TravelMode.TRANSIT},
 			function(response, status) {
 				if (status == google.maps.DirectionsStatus.OK) {
 					 directionsDisplay.setDirections(response);
@@ -343,7 +395,7 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 	                     Proj4js.defs["EPSG:4326"] = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
 	                     var destinoUnico = new Proj4js.Proj('EPSG:4326');
 						 
-						 var puntoCentro = new Proj4js.Point(directionsDisplay.map.center.K,directionsDisplay.map.center.G);
+						 var puntoCentro = new Proj4js.Point(directionsDisplay.A.D[0].location.F,directionsDisplay.A.D[0].location.A);
 						 
 						 //Reproyecta los puntos
 						 Proj4js.transform(destinoUnico, origen1, puntoCentro);
@@ -352,7 +404,7 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 						 //Crea un punto donde va a centrar el mapa una vez que dibuje la ruta
 						 var pixel = new OpenLayers.LonLat(puntoCentro.x,puntoCentro.y);
 						 //Centra el mapa al punto especificado
-						 this.app.mapPanel.map.moveTo(pixel,14,true);},'700');
+						 this.app.mapPanel.map.moveTo(pixel,14,true);}, '700');
 					 		
 					 					 					 
 					} else {
@@ -421,8 +473,17 @@ var AreaInfluenciaBuffer = Ext.extend(gxp.plugins.Tool, {
 			this.layer.removeFeatures([poly]);
 			this.layer.removeFeatures([line]);
 			}}
+    } ,
+	
+	muestraMenu: function() {
+	// aca deberia mostrar el panel oculto
+	
+	//alert("hola");
+	//var right = Ext.getCmp('panel');
+	//right.show();
+	
+	
     }
 
 });
-
-Ext.preg(AreaInfluenciaBuffer.prototype.ptype, AreaInfluenciaBuffer);
+Ext.preg(DibujarRuta.prototype.ptype, DibujarRuta);

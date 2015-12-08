@@ -26,6 +26,8 @@
  * @require plugins/FeatureManager.js
  * @require plugins/SnappingAgent.js
  * @require plugins/FeatureEditor.js
+ * @require MostrarMenu.js
+ * @require plugins/Legend.js
  */
 
  
@@ -45,26 +47,35 @@
             border: false,
 			height: 97
         },{
-            id: "centerpanel",
+            id: "panelcentral",
             xtype: "panel",
             layout: "fit",
             region: "center",
-            border: false,
+            border: 1,
             items: ["mymap"]
         }, {
-            id: "westpanel",
-            xtype: "container",
-            layout: "fit",
-            region: "west",
-            width: 200
-        }/*,{
-    id: "south",
+    id: "paneleste",
     xtype: "container",
-    layout: "fit",
-    region: "south",
-    border: false,
-    height: 200
-}*/],
+    layout: "vbox",
+    region: "west",
+    width: 270,
+    defaults: {
+        width: "100%",
+        layout: "fit"
+    },
+    items: [{
+        title: "Arbol de Capas",
+        id: "arbolCapas",
+        border: false,
+        flex: 1
+    }, {
+		title: "Lugares cercanos a Usted",
+        id: "lugaresCercanos",
+        height: 270,
+		hidden: false,
+		outputTarget: "lugaresCercanos"
+    }]
+			}],
         bbar: {id: "mybbar"}
     },
     
@@ -76,49 +87,16 @@
             border: true,
             tbar: [] // Los botones se agregaran en "tree.bbar" posteriormente
         },
-        outputTarget: "westpanel"
+        outputTarget: "arbolCapas"
     }, {
         ptype: "gxp_addlayers",
         actionTarget: "tree.tbar"
     }, {
         ptype: "gxp_removelayer",
         actionTarget: ["tree.tbar", "tree.contextMenu"]
-    },// {        ptype: "gxp_zoomtoextent",      actionTarget: "map.tbar"    }, 
-	
-//	{  ptype: "gxp_zoom",  actionTarget: "map.tbar" },
-//	{  ptype: "gxp_navigationhistory", actionTarget: "map.tbar"},
-	//{  ptype: "gxp_wmsgetfeatureinfo"},
-
-	//{ ptype: "app_convertir"},
-	{ ptype: "app_areainfluencia",outputTarget: "map.tbar"}
-	
-//	,{ptype: "gxp_googlegeocoder", outputTarget: "map.tbar", outputConfig: {emptyText: "Google..." }}
-	//,{ptype: "app_intersecciones", outputTarget: "map.tbar", outputConfig: {emptyText: "Ingrese una calle..." }}
-/*	,
-	{
-    ptype: "gxp_featuremanager",
-    id: "states_manager",
-    paging: false,
-    layer: {
-        source: "local",
-        name: "Idesf:calles"
-    }
-},
-{
-    ptype: "gxp_featureeditor",
-    featureManager: "states_manager",
-    autoLoadFeature: true
-},
-{
-    ptype: "gxp_featuregrid",
-    featureManager: "states_manager",
-    outputConfig: {
-        loadMask: true
     },
-    outputTarget: "south"
-}*/
-
-	
+	{ ptype: "app_areainfluencia",outputTarget: "map.tbar"},
+	{ ptype: "app_mostrarmenu", outputTarget: "lugaresCercanos"}
 	],
     
     // layer sources
@@ -147,9 +125,10 @@
         layers: [
 			{	
             source: "google",
-            name: "ROADMAP",
+            name: "SATELLITE",
             group: "background"
-        },  {
+        }, 
+		{
             // Capa Vector para mostrar nuestras geometrias y los resultados del procesamiento
             source: "ol",
             name: "sketch",

@@ -146,7 +146,7 @@ gxp.plugins.GoogleSource = Ext.extend(gxp.plugins.LayerSource, {
         // TODO: We may also be able to determine the MAX_ZOOM_LEVEL for each
         // layer type. If not, consider setting them on the OpenLayers level.
         var mapTypes = {
-            "ROADMAP": {"abstract": this.roadmapAbstract, MAX_ZOOM_LEVEL: 20},
+            "ROADMAP": {"abstract": this.roadmapAbstract},//, MAX_ZOOM_LEVEL: 20},
             "SATELLITE": {"abstract": this.satelliteAbstract},
             "HYBRID": {"abstract": this.hybridAbstract},
             "TERRAIN": {"abstract": this.terrainAbstract, MAX_ZOOM_LEVEL: 15}
